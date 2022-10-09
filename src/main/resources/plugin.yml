@@ -1,3 +1,10 @@
-name: ExamplePlugin
-main: org.example.explugin.ExPlugin
+name: CreativePlots
+main: fr.loockeeer.creativeplots.CreativePlots
 version: 1.0.0
+load: POSTWORLD
+api-version: 1.17
+commands:
+  world:
+    description: Commande pour gérer votre monde
+    usage: /world
+    aliases: /w

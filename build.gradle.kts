@@ -1,55 +1,57 @@
+import org.apache.tools.ant.filters.FixCrLfFilter
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.10"
+
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.gmazzo.buildconfig") version "3.0.0"
 }
 
-group = "org.example"
+group = "fr.loockeeer.creativeplots"
 version = "1.0.0"
 
 repositories {
+    mavenLocal()
+    google()
+    jcenter()
     mavenCentral()
-    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven("https://oss.sonatype.org/content/repositories/central")
+    maven("https://maven.enginehub.org/repo/")
 }
+
+val minecraft_version: String by project
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc", "spigot-api", "$minecraft_version-R0.1-SNAPSHOT")
 }
 
-
-val shade = configurations.create("shade")
-shade.extendsFrom(configurations.implementation.get())
+buildConfig {
+    className("BuildConfig")
+    packageName("$group.$name")
+}
 
 tasks {
-
-    javadoc {
-        options.encoding = "UTF-8"
-    }
-
-    compileJava {
-        options.encoding = "UTF-8"
-    }
-
-    compileKotlin {
-        kotlinOptions.jvmTarget = "16"
-    }
-    
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "16"
-    }
-    
     processResources {
-        filesMatching("*.yml") {
-            expand(project.properties)
-        }
-    }
-    
-    create<Jar>("sourceJar") {
-        archiveClassifier.set("source")
-        from(sourceSets["main"].allSource)
+        filter(FixCrLfFilter::class)
+        filter(ReplaceTokens::class, "tokens" to mapOf("version" to project.version))
+        filteringCharset = "UTF-8"
     }
 
     jar {
-        from (shade.map { if (it.isDirectory) it else zipTree(it) })
+        enabled = false
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "16"
+        }
     }
 }
-

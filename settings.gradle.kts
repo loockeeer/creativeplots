@@ -1,2 +1,1 @@
-rootProject.name = "KotlinPaperTemplate"
-
+rootProject.name = "creativeplots"
